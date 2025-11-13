@@ -7,3 +7,38 @@
 
 ### teszt
 get {{host}}/api/
+
+### 
+get {{host}}/api/instruments
+
+### get product by id
+get {{host}}/api/instruments/
+
+### post instruments
+POST  {{host}}/api/instruments
+Accept: application/json
+Content-Type: application/json
+
+{
+    "name": "gitar",
+    "description": "kezzel pengetheto",
+    "brand": "jofele",
+    "price": 5000,
+    "quantity": 47
+}
+
+### delete
+DELETE {{host}}/api/instruments/15
+Accept: application/json
+Content-Type: application/json
+ 
+### patch products
+PATCH   {{host}}/api/instruments/14
+Accept: application/json
+Content-Type: application/json
+ 
+{
+    "description": "Te ki vagy bogyó",
+    "price":8001
+}
+

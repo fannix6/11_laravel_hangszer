@@ -9,5 +9,13 @@ class Instrument extends Model
 {
     /** @use HasFactory<\Database\Factories\InstrumentFactory> */
     use HasFactory;
-      public $timestamps = false;
-}
+    public $timestamps = false;
+    protected $fillable = [
+        'name',
+        'description',
+        'brand',
+        'price',
+        'quantity',
+    ];
+  }
+ 
