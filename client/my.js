@@ -3,7 +3,7 @@ const { createApp } = Vue
 createApp({
     data() {
         return {
-            message: 'Ribanc ',
+            message: 'hangszerek ',
             urlApi: 'http://localhost:8000/api',
             rows: [],
         }
