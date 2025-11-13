@@ -32,14 +32,6 @@ class InstrumentSeeder extends Seeder
         //     ];
         // }
 
-
-
-
-
-
-
-
-
         $filePath = database_path('csv/instruments.csv');
         $data = [];
         $header = []; // Fejlécek tárolására
