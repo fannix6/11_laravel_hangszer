@@ -1,3 +1,49 @@
+# Laravel parancs összefoglaló
+## Alap telepítés
+Laravel **laravel-rest-api** nevű (ez bármi lehet, ez lesz a projekt mappája) projekt létrehozása: `composer create-project laravel/laravel laravel-rest-api`
+
+Ellenőrzés, szerver elindítás: `php artisan serve`
+
+Az api támogatást le kell telepíteni: `php artisan install:api`
+
+Egy tábla CRUD előkészítése: `php artisan make:model Product -a --api`
+
+ Migráció futtatása: `php artisan migrate`
+
+## Egyéb migrációs parancsok:
+Az utolsó migráció visszvonása: `php artisan migrate:rollback`
+Az utolsó migráció visszvonása: `php artisan migrate:rollback --step=1`
+Az utolsó 3 migráció visszvonása: `php artisan migrate:rollback --step=3`
+Az összes migráció vissazvonása: `php artisan migrate:reset`
+Visszavonja az összes migrációt (down()) majd újra lefuttatja őket (up()): `php artisan migrate:refresh`
+Visszavonja az összes migrációt majd újra lefuttatja őket és a seedereket: `php artisan migrate:refresh --seed`
+Törli az összes táblát és újra migrál (nem fut a down): `php artisan migrate:fresh`
+Törli az összes táblát és újra migrál és a seedel: `php artisan migrate:fresh --seed`
+
+Konkrét Migráció Futtatása (up metódus): 
+`php artisan migrate --path=database/migrations/2025_01_20_123456_create_products_table.php`
+
+Konkrét Migráció Visszavonása (DOWN metódus)
+`php artisan migrate:rollback --path=database/migrations/2025_01_20_123456_create_products_table.php`
+
+Konkrét Migráció Frissítése (Újraépítése) (down(), up())
+`php artisan migrate:refresh --path=database/migrations/2025_01_20_123456_create_products_table.php`
+
+Utólagos táblamódosítás migrációs fájl létrehozás:
+`php artisan make:migration add_unique_index_to_produscts_name_column --table=products`
+
+## Seeder
+Seeder osztály készítés (UserSeeder osztály) (database/seeders/UserSeeder.php):  
+`php artisan make:seeder UserSeeder`
+
+
+Seeder futtatása: `php artisan db:seed`
+Konkrét seeder osztály futtatása: `php artisan db:seed --class=ProductSeeder`
+
+## cors
+A cors beállítás létrehozása: `php artisan config:publish cors`
+
+
 # [Laravel](https://laravel.com/)
 
 [Laravel readouble](https://readouble.com/laravel/11.x/en/)
@@ -202,15 +248,15 @@ Authorization: Bearer {{token}}
 
 Egy **product** nevű tábla esetén
 
--   `php artisan make:model product -a --api`
+-   `php artisan make:model Product -a --api`
 -   Létrehozza a kontrollert az össze metódussal, a modellt és a migrációs fájlt.
     -   migrations\2025_11_01_191501_create_products_table.php
     -   app\Models\product.php
     -   seeders\ProductSeeder.php
+    -   database\factories\ProductFactory.php
     -   app\Http\Controllers\ProductController.php
     -   app\Http\Requests\StoreproductRequest.php
     -   app\Http\Requests\UpdateproductRequest.php
-    -   database\factories\ProductFactory.php
     -   app\Policies\ProductPolicy.php
 
 ## Migráció
@@ -224,14 +270,14 @@ migrations\2025_11_01_191501_create_products_table.php
 public function up(): void
 {
     Schema::create('products', function (Blueprint $table) {
-        $table->id();
+        $table->integer('id')->autoIncrement();
+        $table->primary('id');
         $table->string('category', 255)->notNull();
-        $table->string('name', 191)->notNull(); // Ha indexelni akarjuk, ne legyen nagyobb méretű régi mysql motor esetén (mysql: 5.7.7 alatt)
-        $table->text('description', 255)->nullable();
-        $table->string('picture', 255)->nullable();
-        $table->Integer('price')->nullable();
-        $table->Integer('stock')->default(1);
-
+        $table->string('name', 191)->notNull();
+        $table->string('description', 255);
+        $table->string('picture', 255);
+        $table->Integer('price');
+        $table->Integer('stock');
         //Minta mezők
 
         // --- 2. Logikai (BOOLEAN) Alapértelmezett Értékkel
@@ -240,7 +286,7 @@ public function up(): void
         $table->boolean('is_published')->default(false);
 
         // --- 3. Dátum (DATE)
-        $table->date('start_date');
+        $table->date('start_date')->nullable()->default(null);
 
         // --- 4. Dátum és Idő (DATETIME) Alapértelmezett Értékkel
         // Alapértelmezés: NULL
@@ -312,7 +358,7 @@ Az utolsó migráció visszvonása: `php artisan migrate:rollback`
 Az utolsó migráció visszvonása: `php artisan migrate:rollback --step=1`
 Az utolsó 3 migráció visszvonása: `php artisan migrate:rollback --step=3`
 Az összes migráció vissazvonása: `php artisan migrate:reset`
-Visszavonja az összes migrációt majd újra lefuttatja őket: `php artisan migrate:refresh`
+Visszavonja az összes migrációt (down()) majd újra lefuttatja őket (up()): `php artisan migrate:refresh`
 Visszavonja az összes migrációt majd újra lefuttatja őket és a seedereket: `php artisan migrate:refresh --seed`
 Törli az összes táblát és újra migrál (nem fut a down): `php artisan migrate:fresh`
 Törli az összes táblát és újra migrál és a seedel: `php artisan migrate:fresh --seed`
@@ -331,13 +377,17 @@ Konkrét Migráció Frissítése (Újraépítése) (down(), up())
 `php artisan make:migration add_unique_index_to_produscts_name_column --table=products`
 
 ```php
- public function up(): void
+public function up(): void
 {
     Schema::table('products', function (Blueprint $table) {
-        // Hozzáadja az 'email' oszlophoz az egyedi indexet
+        //Egyedi indexet teszek a name mezőre
         $table->unique('name', 'products_name_unique');
+        //Beteszek egy új oszlopot
+        $table->boolean('is_published2')->default(false);
+        //Módosítom a mező méretét
+        $table->string('category', 200)->change();
     });
-}
+}        
 
 /**
  * Reverse the migrations.
@@ -349,6 +399,11 @@ public function down(): void
         $table->dropUnique(['name']); 
         // VAGY az index nevével:
         // $table->dropUnique('products_name_unique');
+        $table->dropColumn('is_published2');
+            
+            // 2. A string oszlop méretének visszaállítása az eredeti 100-ra
+            // (Az "posts" tábla eredeti oszlop mérete feltételezve: 100)
+        $table->string('category', 255)->change();
     });
 }
 ```
@@ -359,8 +414,9 @@ Megjegyzés: a **Schema::create** helyett itt már a **Schema::table** szerepel.
 
 # Seedelés
 A seedelés intézi el a táblák adatokkal való feltöltését.
-3 esetet szoktunk:
+5 esetet szoktunk:
 - sql script
+- php tömbbel
 - src fájlból
 - teszt feltöltés factory-val véletlen kiválsztással saját tömbből
 - Faker könyvtárral
@@ -675,6 +731,42 @@ Route::post('products', [ProductController::class, 'store']);
 Route::patch('products/{id}', [ProductController::class, 'update']);
 Route::delete('products/{id}', [ProductController::class, 'destroy']);
 ```
+
+## Lekérdezések futtatása
+Laravel-ben a kontrollerekben három fő módon futtathatsz SQL lekérdezéseket:
+
+- **Eloquent ORM** (Object-Relational Mapper): A leggyakoribb és ajánlottabb módszer. Objektumokat használ az adatbázis-táblák reprezentálására.
+
+- **Query Builder**: A nyers SQL-hez legközelebb álló, de mégis PHP szintaktikát használó interfész.
+
+- **Nyers SQL** (Raw SQL): Közvetlenül írhatsz SQL parancsokat.
+
+### Eloquent ORM
+
+1. Eloquent ORM (Ajánlott)
+Az Eloquent az adatok kezelésének Laravel-es módja. Feltételezi, hogy létrehoztad a megfelelő modellt a tábládhoz (pl. App\Models\Termek a termek táblához).
+- Összes termék: Termek::all();
+- Lekérdezés feltétellel: Termek::where('ar', '>', 5000)->get();
+- Egy elem: Termek::find(1);
+- Új tarmék: Termek::create(['megnevezes' => 'Laptop']);
+
+### Query Builder
+A Query Builder-t akkor használd, ha az Eloquent modellezés nem szükséges (pl. aggregáció, összetett illesztések), de nem akarsz nyers SQL-t írni. 
+- Ehhez a DB Facade-ot (vagy a `use Illuminate\Support\Facades\DB`-t) kell használni.
+
+- MűveletQuery Builder KódÖsszes lekérdezése: DB::table('termek')->get();
+- Lekérdezés feltételekkel: DB::table('termek')->where('ar', 50000)->first();
+- Új bejegyzés: DB::table('termek')->insert(['megnevezes' => 'Monitor']);
+- Csoportosítás (GROUP BY): DB::table('termek')->select('darab')->groupBy('darab')->get();
+
+### Nyers SQL
+A Nyers SQL-t csak akkor használd, ha nincs más megoldás, mivel fennáll az SQL Injection veszélye, ha nem paraméterezed megfelelően.
+- Ehhez a DB Facade-ot (vagy a `use Illuminate\Support\Facades\DB`-t) kell használni.
+
+- MűveletNyers SQL KódLekérdezés (SELECT): DB::select('SELECT * FROM users WHERE active = ?', [1]);
+- Beszúrás (INSERT): DB::insert('INSERT INTO users (id, name) VALUES (?, ?)', [1, 'Péter']);
+- Módosítás (UPDATE/DELETE): DB::update('UPDATE users SET name = "Kata" WHERE id = ?', [2]);
+
 
 ## Kontrollerek
 app/Http/Controllers
